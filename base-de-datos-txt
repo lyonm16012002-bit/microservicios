@@ -1,0 +1,244 @@
+CREATE DATABASE IF NOT EXISTS liga_universitaria
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE liga_universitaria;
+
+-- =====================================================
+-- 1. USUARIOS
+-- =====================================================
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    nombre VARCHAR(100),
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'delegado') NOT NULL
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- 2. DISCIPLINAS
+-- =====================================================
+
+CREATE TABLE disciplinas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    tipo_marcador ENUM('goles', 'puntos', 'sets') NOT NULL,
+    jugadores_min INT NOT NULL,
+    jugadores_max INT NOT NULL,
+    descripcion TEXT
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- 3. TORNEOS
+-- =====================================================
+
+CREATE TABLE torneos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL,
+    disciplina_id INT NOT NULL,
+    rama ENUM('Masculino', 'Femenino', 'Mixto') NOT NULL,
+    periodo VARCHAR(6) NOT NULL,
+    estado ENUM(
+        'Inscripciones abiertas',
+        'En juego',
+        'Finalizado'
+    ) NOT NULL DEFAULT 'Inscripciones abiertas',
+    cupo_equipos INT NOT NULL DEFAULT 16,
+    cierre_inscripcion DATE NULL,
+    fecha_inicio DATE NULL,
+    observaciones TEXT,
+
+    CONSTRAINT fk_torneo_disciplina
+        FOREIGN KEY (disciplina_id)
+        REFERENCES disciplinas(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    UNIQUE (disciplina_id, rama, periodo)
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- 4. EQUIPOS
+-- =====================================================
+
+CREATE TABLE equipos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    torneo_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    facultad VARCHAR(100) NOT NULL,
+    telefono_contacto VARCHAR(30),
+    correo_contacto VARCHAR(150),
+    estado ENUM(
+        'Pendiente',
+        'Aprobada',
+        'Rechazada'
+    ) NOT NULL DEFAULT 'Pendiente',
+    observaciones TEXT,
+    delegado VARCHAR(100) NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_equipo_torneo
+        FOREIGN KEY (torneo_id)
+        REFERENCES torneos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    UNIQUE (torneo_id, nombre)
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- 5. JUGADORES
+-- =====================================================
+
+CREATE TABLE jugadores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    equipo_id INT NOT NULL,
+    torneo_id INT NOT NULL,
+    documento VARCHAR(30) NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    carrera VARCHAR(100) NOT NULL,
+    facultad VARCHAR(100) NOT NULL,
+    semestre INT,
+    eps VARCHAR(100) NOT NULL,
+    dorsal INT,
+    posicion VARCHAR(50),
+    telefono VARCHAR(30),
+    delegado VARCHAR(100) NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_jugador_equipo
+        FOREIGN KEY (equipo_id)
+        REFERENCES equipos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_jugador_torneo
+        FOREIGN KEY (torneo_id)
+        REFERENCES torneos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    UNIQUE (torneo_id, documento),
+    UNIQUE (equipo_id, dorsal)
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- 6. PARTIDOS
+-- =====================================================
+
+CREATE TABLE partidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    torneo_id INT NOT NULL,
+    jornada INT NOT NULL DEFAULT 1,
+    equipo_local_id INT NOT NULL,
+    equipo_visitante_id INT NOT NULL,
+    fecha DATE NOT NULL,
+    hora TIME NOT NULL,
+    lugar VARCHAR(150),
+    estado ENUM(
+        'Programado',
+        'Jugado',
+        'Aplazado',
+        'Cancelado'
+    ) NOT NULL DEFAULT 'Programado',
+    marcador_local INT NULL,
+    marcador_visitante INT NULL,
+    observaciones TEXT,
+
+    CONSTRAINT fk_partido_torneo
+        FOREIGN KEY (torneo_id)
+        REFERENCES torneos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_partido_local
+        FOREIGN KEY (equipo_local_id)
+        REFERENCES equipos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_partido_visitante
+        FOREIGN KEY (equipo_visitante_id)
+        REFERENCES equipos(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT chk_equipos_diferentes
+        CHECK (equipo_local_id <> equipo_visitante_id),
+
+    INDEX idx_partidos_torneo (torneo_id)
+) ENGINE=InnoDB;
+
+
+-- =====================================================
+-- DATOS INICIALES: DISCIPLINAS
+-- =====================================================
+
+INSERT INTO disciplinas
+(nombre, tipo_marcador, jugadores_min, jugadores_max, descripcion)
+VALUES
+(
+    'Futsal',
+    'goles',
+    5,
+    12,
+    'Fútbol sala. Se juega con 5 jugadores por equipo en cancha.'
+),
+(
+    'Fútbol',
+    'goles',
+    11,
+    22,
+    'Fútbol 11. Se juega con 11 jugadores por equipo en cancha.'
+),
+(
+    'Baloncesto',
+    'puntos',
+    5,
+    12,
+    'Baloncesto. Se juega con 5 jugadores por equipo en cancha; no hay empates.'
+),
+(
+    'Voleibol',
+    'sets',
+    6,
+    12,
+    'Voleibol. El marcador se cuenta en sets (mejor de 5, gana quien llega a 3).'
+),
+(
+    'Balonmano',
+    'goles',
+    7,
+    14,
+    'Balonmano. Se juega con 7 jugadores por equipo en cancha.'
+);
+
+
+-- =====================================================
+-- USUARIOS DE PRUEBA
+-- =====================================================
+-- Las contraseñas deben almacenarse con bcrypt desde tu aplicación.
+-- Estos hashes son solamente ejemplos.
+
+INSERT INTO users
+(username, nombre, password_hash, role)
+VALUES
+(
+    'leomontes',
+    'Administrador de la Liga',
+    '$2b$10$REEMPLAZAR_POR_HASH_BCRYPT',
+    'admin'
+),
+(
+    'delegado',
+    'Delegado de ejemplo',
+    '$2b$10$REEMPLAZAR_POR_HASH_BCRYPT',
+    'delegado'
+);
