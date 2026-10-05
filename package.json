@@ -1,0 +1,22 @@
+{
+  "name": "liga-universitaria-microservicios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Liga Deportiva Universitaria (Universidad de Manizales): inscripción de equipos y jugadores, torneos, partidos y tabla de posiciones, con microservicios en capas, API Gateway y JWT.",
+  "engines": { "node": ">=18" },
+  "workspaces": ["api-gateway", "ms-usuarios", "ms-competencia", "ms-inscripciones"],
+  "scripts": {
+    "start": "concurrently -n gateway,usuarios,competencia,inscripciones -c cyan,green,yellow,magenta \"npm start -w api-gateway\" \"npm start -w ms-usuarios\" \"npm start -w ms-competencia\" \"npm start -w ms-inscripciones\"",
+    "dev": "concurrently -n gateway,usuarios,competencia,inscripciones -c cyan,green,yellow,magenta \"npm run dev -w api-gateway\" \"npm run dev -w ms-usuarios\" \"npm run dev -w ms-competencia\" \"npm run dev -w ms-inscripciones\"",
+    "probar:jwt": "node scripts/probar-jwt.js",
+    "demo:datos": "node scripts/datos-demo.js",
+    "usuarios:reset": "node scripts/reset-usuarios.js"
+  },
+  "devDependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "concurrently": "^9.0.1",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liga UManizales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/futuro.css">
+</head>
+<body>
+  <div class="bg"><div class="grid"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo-plaque"><img src="img/logo-um.png" alt="Universidad de Manizales"></div>
+      <div class="brand-text">Liga UManizales</div>
+      <nav class="menu" id="sideNav"><!-- el menú se genera por JS según el rol --></nav>
+      <div class="user-box">
+        <div class="avatar" id="avatar">?</div>
+        <div class="who"><b id="userLabel">-</b><span id="roleBadge">-</span></div>
+        <button type="button" onclick="api.logout()" title="Cerrar sesión">Salir</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div><h1 id="pageTitle">Liga UManizales</h1><p id="pageSub"></p></div>
+        <div class="live"><i></i> Sistema en línea</div>
+      </div>
+      <div class="view" id="mainContent"><!-- El contenido se genera por JS --></div>
+    </main>
+  </div>
+
+  <!-- Sugerencias de EPS para los formularios (el campo sigue siendo de texto libre) -->
+  <datalist id="listaEps">
+    <option value="Sura EPS"><option value="Sanitas EPS"><option value="Nueva EPS"><option value="Salud Total">
+    <option value="Coosalud"><option value="Compensar"><option value="Famisanar"><option value="Mutual Ser">
+    <option value="Asmet Salud"><option value="Emssanar"><option value="Savia Salud"><option value="Régimen especial">
+  </datalist>
+
+  <!-- Modal genérico para crear/editar registros -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <h3 id="modalTitle">Registro</h3>
+      <form id="modalForm">
+        <div class="field-grid" id="modalFields"></div>
+        <div class="error-msg" id="modalError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="modalCancel">Cancelar</button>
+          <button type="submit" class="btn btn-gold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
